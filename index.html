@@ -704,8 +704,22 @@
       <select id="newDestino"></select>
     </div>
     <div class="form-group">
-      <label class="form-label">Descripción del encargo</label>
-      <textarea id="newDesc" placeholder="Ej: Caja de producto X, talla M..."></textarea>
+      <label class="form-label">Código</label>
+      <input id="newCodigo" type="text" placeholder="Ej: 2600184">
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="form-group">
+        <label class="form-label">Unidades</label>
+        <input id="newUnidades" type="number" min="1" placeholder="Ej: 1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Precio (€)</label>
+        <input id="newPrecio" type="text" placeholder="Ej: 26,99">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notas</label>
+      <textarea id="newNotas" placeholder="Ej: Fragil, entregar antes del viernes..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">Repartidor</label>
@@ -832,7 +846,7 @@ function renderList() {
         <span class="arrow">→</span>
         <span>${enc.destino}</span>
       </div>
-      <div class="card-desc">${enc.desc || 'Sin descripción'}</div>
+      <div class="card-desc">${enc.codigo ? '📦 ' + enc.codigo : 'Sin código'}</div>
       <div class="card-date">🕐 ${formatDate(enc.createdAt)}</div>
     </div>
   `).join('');
@@ -901,8 +915,20 @@ function selectEncargo(id) {
     <!-- INFO -->
     <div class="info-grid">
       <div class="info-block">
-        <div class="info-label">Descripción</div>
-        <div class="info-value">${enc.desc || '—'}</div>
+        <div class="info-label">Código</div>
+        <div class="info-value mono">${enc.codigo || '—'}</div>
+      </div>
+      <div class="info-block">
+        <div class="info-label">Unidades</div>
+        <div class="info-value mono">${enc.unidades || '—'}</div>
+      </div>
+      <div class="info-block">
+        <div class="info-label">Precio</div>
+        <div class="info-value mono">${enc.precio ? enc.precio + ' €' : '—'}</div>
+      </div>
+      <div class="info-block" style="grid-column: span 2;">
+        <div class="info-label">Notas</div>
+        <div class="info-value">${enc.notas || '—'}</div>
       </div>
       <div class="info-block">
         <div class="info-label">Repartidor</div>
@@ -953,15 +979,19 @@ async function deleteEncargo(id) {
 async function crearEncargo() {
   const origen = document.getElementById('newOrigen').value;
   const destino = document.getElementById('newDestino').value;
-  const desc = document.getElementById('newDesc').value.trim();
+  const codigo = document.getElementById('newCodigo').value.trim();
+  const unidades = document.getElementById('newUnidades').value.trim();
+  const precio = document.getElementById('newPrecio').value.trim();
+  const notas = document.getElementById('newNotas').value.trim();
   const repartidor = document.getElementById('newRepartidor').value.trim();
 
   if (!origen || !destino) { showToast('⚠️ Selecciona tiendas', false); return; }
   if (origen === destino) { showToast('⚠️ Origen y destino deben ser distintos', false); return; }
+  if (!codigo) { showToast('⚠️ Introduce el código del producto', false); return; }
 
   const enc = {
     id: genId(),
-    origen, destino, desc, repartidor,
+    origen, destino, codigo, unidades, precio, notas, repartidor,
     estado: -1,
     timestamps: {},
     createdAt: Date.now(),
@@ -984,7 +1014,10 @@ function updateStats() {
 function openModal() {
   document.getElementById('newOrigen').value = '';
   document.getElementById('newDestino').value = '';
-  document.getElementById('newDesc').value = '';
+  document.getElementById('newCodigo').value = '';
+  document.getElementById('newUnidades').value = '';
+  document.getElementById('newPrecio').value = '';
+  document.getElementById('newNotas').value = '';
   document.getElementById('newRepartidor').value = '';
   document.getElementById('modalOverlay').classList.add('open');
 }
