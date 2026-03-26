@@ -665,7 +665,7 @@
     <div class="filters">
       <div>
         <div class="filter-label">Filtrar por estado</div>
-        <select id="filterEstado" onchange="renderList()">
+        <select id="filterEstado">
           <option value="">Todos los estados</option>
           <option value="0">Recogido por repartidor</option>
           <option value="1">Depositado en casillero</option>
@@ -675,7 +675,7 @@
       </div>
       <div>
         <div class="filter-label">Filtrar por tienda</div>
-        <select id="filterTienda" onchange="renderList()">
+        <select id="filterTienda">
           <option value="">Todas las tiendas</option>
         </select>
       </div>
@@ -801,6 +801,10 @@ function init() {
       el.innerHTML += `<option value="${t}">${t}</option>`;
     });
   });
+
+  // Event listeners filtros
+  document.getElementById('filterEstado').addEventListener('change', renderList);
+  document.getElementById('filterTienda').addEventListener('change', renderList);
 
   // Escuchar cambios en tiempo real desde Firebase
   onSnapshot(encargosRef, (snapshot) => {
