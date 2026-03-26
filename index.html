@@ -824,10 +824,15 @@ function renderList() {
   const filterE = document.getElementById('filterEstado').value;
   const filterT = document.getElementById('filterTienda').value;
 
-  let filtered = [...encargos].reverse();
+  let filtered = [...encargos];
 
   if (filterE !== '') filtered = filtered.filter(e => e.estado === parseInt(filterE));
-  if (filterT !== '') filtered = filtered.filter(e => e.origen === filterT || e.destino === filterT);
+  if (filterT !== '') filtered = filtered.filter(e => {
+    const origen = (e.origen || '').trim().toLowerCase();
+    const destino = (e.destino || '').trim().toLowerCase();
+    const tienda = filterT.trim().toLowerCase();
+    return origen === tienda || destino === tienda;
+  });
 
   const el = document.getElementById('encargosList');
 
