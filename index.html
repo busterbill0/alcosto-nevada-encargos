@@ -337,6 +337,8 @@
   }
 
   .btn-icon:hover { border-color: var(--danger); color: var(--danger); }
+  .btn-icon.back { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1; }
+  .btn-icon.back:hover { border-color: var(--accent); color: var(--accent); }
 
   /* PROGRESS TRACK */
   .progress-section {
@@ -867,10 +869,13 @@ function selectEncargo(id) {
 
   dv.innerHTML = `
     <div class="detail-header">
-      <div>
-        <div class="detail-id">${enc.id}</div>
-        <div class="detail-route">
-          ${enc.origen} <span class="arr">→</span> ${enc.destino}
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="btn-icon" onclick="volverLista()" title="Volver" style="flex-shrink:0;">‹</button>
+        <div>
+          <div class="detail-id">${enc.id}</div>
+          <div class="detail-route">
+            ${enc.origen} <span class="arr">→</span> ${enc.destino}
+          </div>
         </div>
       </div>
       <div class="detail-actions">
@@ -945,6 +950,15 @@ function selectEncargo(id) {
     </div>
   `;
 
+  renderList();
+}
+
+// ============ VOLVER ============
+function volverLista() {
+  selectedId = null;
+  document.getElementById('appContainer').classList.remove('detail-open');
+  document.getElementById('noSelection').style.display = 'flex';
+  document.getElementById('detailView').style.display = 'none';
   renderList();
 }
 
@@ -1049,7 +1063,7 @@ window.crearEncargo = crearEncargo;
 window.selectEncargo = selectEncargo;
 window.advanceEncargo = advanceEncargo;
 window.deleteEncargo = deleteEncargo;
-window.renderList = renderList;
+window.volverLista = volverLista;
 </script>
 </body>
 </html>
