@@ -725,11 +725,37 @@
     </div>
     <div class="form-group">
       <label class="form-label">Repartidor</label>
-      <input id="newRepartidor" type="text" placeholder="Nombre del repartidor">
+      <select id="newRepartidor">
+        <option value="">Seleccionar...</option>
+        <option value="Antonio">Antonio</option>
+        <option value="Paco">Paco</option>
+        <option value="Celia">Celia</option>
+        <option value="Eva">Eva</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
       <button class="btn-primary" onclick="crearEncargo()">Crear encargo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REPARTIDOR PASO -->
+<div class="modal-overlay" id="modalRepartidor">
+  <div class="modal" style="max-width:320px;">
+    <div class="modal-title">👤 ¿Quién ha realizado este paso?</div>
+    <div class="form-group">
+      <select id="pasoRepartidor">
+        <option value="">Seleccionar...</option>
+        <option value="Antonio">Antonio</option>
+        <option value="Paco">Paco</option>
+        <option value="Celia">Celia</option>
+        <option value="Eva">Eva</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="cancelarPaso()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmarPaso()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -912,7 +938,7 @@ function selectEncargo(id) {
               </div>
               <div class="step-content">
                 <div class="step-title ${done ? 'done' : current ? 'current' : 'pending'}">${s.label}</div>
-                ${ts ? `<div class="step-time">${formatDate(ts)}</div>` : ''}
+                ${ts ? `<div class="step-time">${formatDate(ts)}${enc.repartidoresPasos?.[i] ? ' · <strong>' + enc.repartidoresPasos[i] + '</strong>' : ''}</div>` : ''}
                 ${current ? `
                   <button class="btn-advance" onclick="advanceEncargo('${enc.id}')">
                     Marcar este paso ✓
@@ -972,16 +998,39 @@ function volverLista() {
 }
 
 // ============ ADVANCE ============
-async function advanceEncargo(id) {
-  const enc = encargos.find(e => e.id === id);
+let _pendingAdvanceId = null;
+
+function advanceEncargo(id) {
+  _pendingAdvanceId = id;
+  document.getElementById('pasoRepartidor').value = '';
+  document.getElementById('modalRepartidor').classList.add('open');
+}
+
+function cancelarPaso() {
+  _pendingAdvanceId = null;
+  document.getElementById('modalRepartidor').classList.remove('open');
+}
+
+async function confirmarPaso() {
+  const repartidorPaso = document.getElementById('pasoRepartidor').value;
+  if (!repartidorPaso) { showToast('⚠️ Selecciona un repartidor', false); return; }
+
+  const enc = encargos.find(e => e.id === _pendingAdvanceId);
   if (!enc || enc.estado >= 3) return;
+
   const nuevoEstado = enc.estado + 1;
   const nuevoTs = { ...(enc.timestamps || {}), [nuevoEstado]: Date.now() };
+  const repartidoresPasos = { ...(enc.repartidoresPasos || {}), [nuevoEstado]: repartidorPaso };
+
   await updateDoc(doc(db, "encargos", enc._docId), {
     estado: nuevoEstado,
     timestamps: nuevoTs,
+    repartidoresPasos,
     updatedAt: Date.now()
   });
+
+  document.getElementById('modalRepartidor').classList.remove('open');
+  _pendingAdvanceId = null;
   showToast(`${ESTADOS[nuevoEstado].icon} ${ESTADOS[nuevoEstado].label}`);
 }
 
@@ -1073,6 +1122,8 @@ window.selectEncargo = selectEncargo;
 window.advanceEncargo = advanceEncargo;
 window.deleteEncargo = deleteEncargo;
 window.volverLista = volverLista;
+window.cancelarPaso = cancelarPaso;
+window.confirmarPaso = confirmarPaso;
 </script>
 </body>
 </html>
