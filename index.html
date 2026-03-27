@@ -623,6 +623,100 @@
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast .t-icon { font-size: 1.1rem; }
 
+  /* SIDEBAR FOOTER */
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-stats {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    color: var(--text);
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .btn-stats:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* PRODUCTO ROW */
+  .producto-row {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .producto-row-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: end;
+  }
+
+  .btn-remove-producto {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--danger);
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .btn-remove-producto:hover { background: rgba(255,77,109,0.1); }
+
+  .btn-add-producto {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.82rem;
+    padding: 9px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    margin-bottom: 4px;
+  }
+
+  .btn-add-producto:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* STATS */
+  .stats-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stats-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stats-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
   /* RESPONSIVE */
   @media (max-width: 768px) {
     .app { grid-template-columns: 1fr; }
@@ -685,6 +779,9 @@
       </div>
     </div>
     <div class="encargos-list" id="encargosList"></div>
+    <div class="sidebar-footer">
+      <button class="btn-stats" onclick="openStats()">📊 Estadísticas por tienda</button>
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -709,23 +806,15 @@
       <label class="form-label">Tienda destino</label>
       <select id="newDestino"></select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Código</label>
-      <input id="newCodigo" type="text" placeholder="Ej: 2600184">
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <div class="form-group">
-        <label class="form-label">Unidades</label>
-        <input id="newUnidades" type="number" min="1" placeholder="Ej: 1">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Precio (€)</label>
-        <input id="newPrecio" type="text" placeholder="Ej: 26,99">
-      </div>
-    </div>
-    <div class="form-group">
+
+    <!-- PRODUCTOS -->
+    <div class="form-label" style="margin-bottom:8px;">Productos</div>
+    <div id="productosContainer"></div>
+    <button class="btn-add-producto" onclick="addProductoRow()">＋ Añadir producto</button>
+
+    <div class="form-group" style="margin-top:14px;">
       <label class="form-label">Notas</label>
-      <textarea id="newNotas" placeholder="Ej: Fragil, entregar antes del viernes..."></textarea>
+      <textarea id="newNotas" placeholder="Ej: Frágil, entregar antes del viernes..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">Repartidor</label>
@@ -760,6 +849,47 @@
     <div class="modal-actions">
       <button class="btn-secondary" onclick="cancelarPaso()">Cancelar</button>
       <button class="btn-primary" onclick="confirmarPaso()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ESTADÍSTICAS -->
+<div class="modal-overlay" id="modalStats" onclick="closeStatsOutside(event)">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-title">📊 Estadísticas por <span>Tienda</span></div>
+    <div class="form-group">
+      <label class="form-label">Tienda</label>
+      <select id="statsTienda"></select>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <div class="form-group">
+        <label class="form-label">Desde</label>
+        <input type="date" id="statsDesde">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hasta</label>
+        <input type="date" id="statsHasta">
+      </div>
+    </div>
+    <button class="btn-primary" style="width:100%; margin-bottom:18px;" onclick="calcularStats()">Ver estadísticas</button>
+    <div id="statsResult" style="display:none;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="stats-box">
+          <div class="stats-label">📤 Enviados</div>
+          <div class="stats-num" id="statsEnviados">0</div>
+        </div>
+        <div class="stats-box">
+          <div class="stats-label">📥 Recibidos</div>
+          <div class="stats-num" id="statsRecibidos">0</div>
+        </div>
+        <div class="stats-box" style="grid-column:span 2;">
+          <div class="stats-label">📦 Total encargos</div>
+          <div class="stats-num" id="statsTotal">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="closeStats()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -819,7 +949,7 @@ function formatDate(ts) {
 
 // ============ INIT ============
 function init() {
-  const selects = ['filterTienda', 'newOrigen', 'newDestino'];
+  const selects = ['filterTienda', 'newOrigen', 'newDestino', 'statsTienda'];
   selects.forEach(id => {
     const el = document.getElementById(id);
     if (id === 'filterTienda') {
@@ -958,17 +1088,18 @@ function selectEncargo(id) {
 
     <!-- INFO -->
     <div class="info-grid">
-      <div class="info-block">
-        <div class="info-label">Código</div>
-        <div class="info-value mono">${enc.codigo || '—'}</div>
-      </div>
-      <div class="info-block">
-        <div class="info-label">Unidades</div>
-        <div class="info-value mono">${enc.unidades || '—'}</div>
-      </div>
-      <div class="info-block">
-        <div class="info-label">Precio</div>
-        <div class="info-value mono">${enc.precio ? enc.precio + ' €' : '—'}</div>
+      <div class="info-block" style="grid-column: span 2;">
+        <div class="info-label">Productos</div>
+        ${(() => {
+          const prods = enc.productos && enc.productos.length > 0 ? enc.productos : [{ codigo: enc.codigo, unidades: enc.unidades, precio: enc.precio }];
+          return prods.map((p, i) => `
+            <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; margin-top:${i>0?'8px':'4px'}; padding:8px; background:var(--bg); border-radius:6px; border:1px solid var(--border);">
+              <div><div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px;">CÓDIGO</div><div style="font-family:'DM Mono',monospace;font-size:0.85rem;">${p.codigo || '—'}</div></div>
+              <div><div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px;">UDS</div><div style="font-family:'DM Mono',monospace;font-size:0.85rem;">${p.unidades || '—'}</div></div>
+              <div><div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px;">PRECIO</div><div style="font-family:'DM Mono',monospace;font-size:0.85rem;">${p.precio ? p.precio+'€' : '—'}</div></div>
+            </div>
+          `).join('');
+        })()}
       </div>
       <div class="info-block" style="grid-column: span 2;">
         <div class="info-label">Notas</div>
@@ -1051,23 +1182,74 @@ async function deleteEncargo(id) {
   showToast('🗑️ Encargo eliminado', false);
 }
 
+// ============ PRODUCTOS ============
+let productoCount = 0;
+
+function addProductoRow(codigo = '', unidades = '', precio = '') {
+  productoCount++;
+  const id = productoCount;
+  const container = document.getElementById('productosContainer');
+  const row = document.createElement('div');
+  row.className = 'producto-row';
+  row.id = `prod-row-${id}`;
+  row.innerHTML = `
+    <div class="producto-row-grid">
+      <div>
+        <div class="form-label" style="font-size:0.65rem; margin-bottom:4px;">Código</div>
+        <input type="text" id="prod-cod-${id}" value="${codigo}" placeholder="Ej: 2600184" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Oswald',sans-serif;font-size:0.82rem;padding:7px 10px;width:100%;outline:none;">
+      </div>
+      <div>
+        <div class="form-label" style="font-size:0.65rem; margin-bottom:4px;">Uds</div>
+        <input type="number" id="prod-uds-${id}" value="${unidades}" min="1" placeholder="1" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Oswald',sans-serif;font-size:0.82rem;padding:7px 10px;width:100%;outline:none;">
+      </div>
+      <div>
+        <div class="form-label" style="font-size:0.65rem; margin-bottom:4px;">Precio €</div>
+        <input type="text" id="prod-pre-${id}" value="${precio}" placeholder="0,00" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Oswald',sans-serif;font-size:0.82rem;padding:7px 10px;width:100%;outline:none;">
+      </div>
+      ${id > 1 ? `<button class="btn-remove-producto" onclick="removeProductoRow(${id})">✕</button>` : '<div></div>'}
+    </div>
+  `;
+  container.appendChild(row);
+}
+
+function removeProductoRow(id) {
+  document.getElementById(`prod-row-${id}`)?.remove();
+}
+
+function getProductos() {
+  const rows = document.querySelectorAll('.producto-row');
+  const productos = [];
+  rows.forEach(row => {
+    const id = row.id.replace('prod-row-', '');
+    const cod = document.getElementById(`prod-cod-${id}`)?.value.trim();
+    const uds = document.getElementById(`prod-uds-${id}`)?.value.trim();
+    const pre = document.getElementById(`prod-pre-${id}`)?.value.trim();
+    if (cod) productos.push({ codigo: cod, unidades: uds, precio: pre });
+  });
+  return productos;
+}
+
 // ============ CREATE ============
 async function crearEncargo() {
   const origen = document.getElementById('newOrigen').value;
   const destino = document.getElementById('newDestino').value;
-  const codigo = document.getElementById('newCodigo').value.trim();
-  const unidades = document.getElementById('newUnidades').value.trim();
-  const precio = document.getElementById('newPrecio').value.trim();
   const notas = document.getElementById('newNotas').value.trim();
   const repartidor = document.getElementById('newRepartidor').value.trim();
+  const productos = getProductos();
 
   if (!origen || !destino) { showToast('⚠️ Selecciona tiendas', false); return; }
   if (origen === destino) { showToast('⚠️ Origen y destino deben ser distintos', false); return; }
-  if (!codigo) { showToast('⚠️ Introduce el código del producto', false); return; }
+  if (productos.length === 0) { showToast('⚠️ Añade al menos un producto', false); return; }
 
+  // Compatibilidad: primer producto como campos principales
   const enc = {
     id: genId(),
-    origen, destino, codigo, unidades, precio, notas, repartidor,
+    origen, destino,
+    codigo: productos[0].codigo,
+    unidades: productos[0].unidades,
+    precio: productos[0].precio,
+    productos,
+    notas, repartidor,
     estado: -1,
     timestamps: {},
     createdAt: Date.now(),
@@ -1090,11 +1272,11 @@ function updateStats() {
 function openModal() {
   document.getElementById('newOrigen').value = '';
   document.getElementById('newDestino').value = '';
-  document.getElementById('newCodigo').value = '';
-  document.getElementById('newUnidades').value = '';
-  document.getElementById('newPrecio').value = '';
   document.getElementById('newNotas').value = '';
   document.getElementById('newRepartidor').value = '';
+  document.getElementById('productosContainer').innerHTML = '';
+  productoCount = 0;
+  addProductoRow();
   document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -1114,6 +1296,48 @@ function showToast(msg, ok = true) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ============ ESTADÍSTICAS ============
+function openStats() {
+  const sel = document.getElementById('statsTienda');
+  sel.innerHTML = '<option value="">Seleccionar tienda...</option>';
+  TIENDAS.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
+  document.getElementById('statsResult').style.display = 'none';
+  document.getElementById('statsDesde').value = '';
+  document.getElementById('statsHasta').value = '';
+  document.getElementById('modalStats').classList.add('open');
+}
+
+function closeStats() {
+  document.getElementById('modalStats').classList.remove('open');
+}
+
+function closeStatsOutside(e) {
+  if (e.target === document.getElementById('modalStats')) closeStats();
+}
+
+function calcularStats() {
+  const tienda = document.getElementById('statsTienda').value;
+  if (!tienda) { showToast('⚠️ Selecciona una tienda', false); return; }
+
+  const desdeVal = document.getElementById('statsDesde').value;
+  const hastaVal = document.getElementById('statsHasta').value;
+  const desde = desdeVal ? new Date(desdeVal).getTime() : 0;
+  const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59').getTime() : Date.now();
+
+  const filtrados = encargos.filter(e => {
+    const ts = e.createdAt?.toMillis ? e.createdAt.toMillis() : (e.createdAt || 0);
+    return ts >= desde && ts <= hasta;
+  });
+
+  const enviados = filtrados.filter(e => (e.origen || '').toLowerCase() === tienda.toLowerCase()).length;
+  const recibidos = filtrados.filter(e => (e.destino || '').toLowerCase() === tienda.toLowerCase()).length;
+
+  document.getElementById('statsEnviados').textContent = enviados;
+  document.getElementById('statsRecibidos').textContent = recibidos;
+  document.getElementById('statsTotal').textContent = enviados + recibidos;
+  document.getElementById('statsResult').style.display = 'block';
+}
+
 // ============ START ============
 init();
 
@@ -1128,6 +1352,12 @@ window.deleteEncargo = deleteEncargo;
 window.volverLista = volverLista;
 window.cancelarPaso = cancelarPaso;
 window.confirmarPaso = confirmarPaso;
+window.addProductoRow = addProductoRow;
+window.removeProductoRow = removeProductoRow;
+window.openStats = openStats;
+window.closeStats = closeStats;
+window.closeStatsOutside = closeStatsOutside;
+window.calcularStats = calcularStats;
 </script>
 </body>
 </html>
