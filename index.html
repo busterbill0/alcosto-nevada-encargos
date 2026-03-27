@@ -788,9 +788,15 @@
         </select>
       </div>
       <div>
-        <div class="filter-label">Filtrar por tienda</div>
-        <select id="filterTienda">
-          <option value="">Todas las tiendas</option>
+        <div class="filter-label">Filtrar por tienda origen</div>
+        <select id="filterOrigen">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <div class="filter-label">Filtrar por tienda destino</div>
+        <select id="filterDestino">
+          <option value="">Todas</option>
         </select>
       </div>
     </div>
@@ -964,11 +970,13 @@ function formatDate(ts) {
 
 // ============ INIT ============
 function init() {
-  const selects = ['filterTienda', 'newOrigen', 'newDestino', 'statsTienda'];
+  const selects = ['filterOrigen', 'filterDestino', 'newOrigen', 'newDestino', 'statsTienda'];
   selects.forEach(id => {
     const el = document.getElementById(id);
-    if (id === 'filterTienda') {
-      el.innerHTML = '<option value="">Todas las tiendas</option>';
+    if (id === 'filterOrigen' || id === 'filterDestino') {
+      el.innerHTML = '<option value="">Todas</option>';
+    } else if (id === 'statsTienda') {
+      el.innerHTML = '<option value="">Seleccionar tienda...</option>';
     } else {
       el.innerHTML = '<option value="">Seleccionar...</option>';
     }
@@ -979,7 +987,8 @@ function init() {
 
   // Event listeners filtros
   document.getElementById('filterEstado').addEventListener('change', renderList);
-  document.getElementById('filterTienda').addEventListener('change', renderList);
+  document.getElementById('filterOrigen').addEventListener('change', renderList);
+  document.getElementById('filterDestino').addEventListener('change', renderList);
 
   // Escuchar cambios en tiempo real desde Firebase
   onSnapshot(encargosRef, (snapshot) => {
@@ -1001,7 +1010,8 @@ function init() {
 // ============ RENDER LIST ============
 function renderList() {
   const filterE = document.getElementById('filterEstado').value;
-  const filterT = document.getElementById('filterTienda').value;
+  const filterO = document.getElementById('filterOrigen').value;
+  const filterD = document.getElementById('filterDestino').value;
 
   let filtered = [...encargos];
 
@@ -1010,12 +1020,13 @@ function renderList() {
   } else {
     filtered = filtered.filter(e => e.estado < 3);
   }
-  if (filterT !== '') filtered = filtered.filter(e => {
-    const origen = (e.origen || '').trim().toLowerCase();
-    const destino = (e.destino || '').trim().toLowerCase();
-    const tienda = filterT.trim().toLowerCase();
-    return origen === tienda || destino === tienda;
-  });
+
+  if (filterO !== '') filtered = filtered.filter(e =>
+    (e.origen || '').trim().toLowerCase() === filterO.trim().toLowerCase()
+  );
+  if (filterD !== '') filtered = filtered.filter(e =>
+    (e.destino || '').trim().toLowerCase() === filterD.trim().toLowerCase()
+  );
 
   const el = document.getElementById('encargosList');
 
