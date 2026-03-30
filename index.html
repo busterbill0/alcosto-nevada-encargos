@@ -1215,22 +1215,27 @@ async function confirmarPaso() {
   if (!repartidorPaso) { showToast('⚠️ Selecciona un repartidor', false); return; }
 
   const enc = encargos.find(e => e.id === _pendingAdvanceId);
-  if (!enc || enc.estado >= 3) return;
+  if (!enc || enc.estado >= 3) { showToast('⚠️ Error al encontrar el encargo', false); return; }
+  if (!enc._docId) { showToast('⚠️ Error: documento no encontrado', false); return; }
 
   const nuevoEstado = enc.estado + 1;
   const nuevoTs = { ...(enc.timestamps || {}), [nuevoEstado]: Date.now() };
   const repartidoresPasos = { ...(enc.repartidoresPasos || {}), [nuevoEstado]: repartidorPaso };
 
-  await updateDoc(doc(db, "encargos", enc._docId), {
-    estado: nuevoEstado,
-    timestamps: nuevoTs,
-    repartidoresPasos,
-    updatedAt: Date.now()
-  });
-
-  document.getElementById('modalRepartidor').classList.remove('open');
-  _pendingAdvanceId = null;
-  showToast(`${ESTADOS[nuevoEstado].icon} ${ESTADOS[nuevoEstado].label}`);
+  try {
+    await updateDoc(doc(db, "encargos", enc._docId), {
+      estado: nuevoEstado,
+      timestamps: nuevoTs,
+      repartidoresPasos,
+      updatedAt: Date.now()
+    });
+    document.getElementById('modalRepartidor').classList.remove('open');
+    _pendingAdvanceId = null;
+    showToast(`${ESTADOS[nuevoEstado].icon} ${ESTADOS[nuevoEstado].label}`);
+  } catch(e) {
+    showToast('⚠️ Error al guardar. Inténtalo de nuevo.', false);
+    console.error(e);
+  }
 }
 
 // ============ DELETE ============
