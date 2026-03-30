@@ -1075,7 +1075,9 @@ function init() {
     });
     renderList();
     updateStats();
-    if (selectedId) {
+    // Solo refrescar el detalle si no hay modal abierto
+    const modalAbierto = document.getElementById('modalRepartidor').classList.contains('open');
+    if (selectedId && !modalAbierto) {
       const enc = encargos.find(e => e.id === selectedId);
       if (enc) selectEncargo(selectedId);
     }
@@ -1272,6 +1274,12 @@ async function confirmarPaso() {
     });
     _pendingAdvanceId = null;
     showToast(`${ESTADOS[nuevoEstado].icon} ${ESTADOS[nuevoEstado].label}`);
+    setTimeout(() => {
+      if (selectedId) {
+        const encActualizado = encargos.find(e => e.id === selectedId);
+        if (encActualizado) selectEncargo(selectedId);
+      }
+    }, 600);
   } catch(err) {
     showToast('⚠️ Error al guardar. Inténtalo de nuevo.', false);
     console.error(err);
