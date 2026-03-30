@@ -817,7 +817,7 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <h2>Encargos activos</h2>
-      <button class="btn-new" onclick="openModal()">
+      <button class="btn-new" data-action="openModal">
         <span>＋</span> Nuevo encargo
       </button>
     </div>
@@ -847,7 +847,7 @@
     </div>
     <div class="encargos-list" id="encargosList"></div>
     <div class="sidebar-footer">
-      <button class="btn-stats" onclick="openStats()">📊 Estadísticas por tienda</button>
+      <button class="btn-stats" data-action="openStats">📊 Estadísticas por tienda</button>
     </div>
   </div>
 
@@ -862,7 +862,7 @@
 </div>
 
 <!-- MODAL NUEVO ENCARGO -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+<div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title">📦 Nuevo <span>Encargo</span></div>
     <div class="modal-body">
@@ -876,14 +876,14 @@
     </div>
     <div class="form-label" style="margin-bottom:8px;">Productos</div>
     <div id="productosContainer"></div>
-    <button class="btn-add-producto" onclick="addProductoRow()">＋ Añadir producto</button>
+    <button class="btn-add-producto" data-action="addProducto">＋ Añadir producto</button>
     <div class="form-group" style="margin-top:14px;">
       <label class="form-label">Notas</label>
       <textarea id="newNotas" placeholder="Ej: Frágil, entregar antes del viernes..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-primary" onclick="crearEncargo()">Crear encargo</button>
+      <button class="btn-secondary" data-action="closeModal">Cancelar</button>
+      <button class="btn-primary" data-action="crearEncargo">Crear encargo</button>
     </div>
   </div>
 </div>
@@ -904,14 +904,14 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="cancelarPaso()">Cancelar</button>
-      <button class="btn-primary" onclick="confirmarPaso()">Confirmar</button>
+      <button class="btn-secondary" data-action="cancelarPaso">Cancelar</button>
+      <button class="btn-primary" data-action="confirmarPaso">Confirmar</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL ESTADÍSTICAS -->
-<div class="modal-overlay" id="modalStats" onclick="closeStatsOutside(event)">
+<div class="modal-overlay" id="modalStats">
   <div class="modal" style="max-width:500px;">
     <div class="modal-title">📊 Estadísticas por <span>Tienda</span></div>
     <div class="modal-body">
@@ -929,7 +929,7 @@
         <input type="date" id="statsHasta">
       </div>
     </div>
-    <button class="btn-primary" style="width:100%; margin-bottom:18px;" onclick="calcularStats()">Ver estadísticas</button>
+    <button class="btn-primary" style="width:100%; margin-bottom:18px;" data-action="calcularStats">Ver estadísticas</button>
     <div id="statsResult" style="display:none;">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div class="stats-box">
@@ -948,7 +948,7 @@
     </div>
     </div>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeStats()">Cerrar</button>
+      <button class="btn-secondary" data-action="closeStats">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1023,16 +1023,41 @@ function init() {
     });
   });
 
-  // Event delegation para botones dinámicos
+  // Event delegation — gestiona TODOS los clicks
   document.addEventListener('click', (e) => {
+    // Botones con data-advance
     const advance = e.target.closest('[data-advance]');
     if (advance) { advanceEncargo(advance.dataset.advance); return; }
 
+    // Botones con data-delete
     const del = e.target.closest('[data-delete]');
     if (del) { deleteEncargo(del.dataset.delete); return; }
 
-    const volver = e.target.closest('[data-action="volver"]');
-    if (volver) { volverLista(); return; }
+    // Botones con data-remove-producto
+    const removeProd = e.target.closest('[data-remove-producto]');
+    if (removeProd) { removeProductoRow(removeProd.dataset.removeProducto); return; }
+
+    // Acciones nombradas
+    const action = e.target.closest('[data-action]');
+    if (action) {
+      switch(action.dataset.action) {
+        case 'volver': volverLista(); break;
+        case 'openModal': openModal(); break;
+        case 'closeModal': closeModal(); break;
+        case 'crearEncargo': crearEncargo(); break;
+        case 'cancelarPaso': cancelarPaso(); break;
+        case 'confirmarPaso': confirmarPaso(); break;
+        case 'openStats': openStats(); break;
+        case 'closeStats': closeStats(); break;
+        case 'calcularStats': calcularStats(); break;
+        case 'addProducto': addProductoRow(); break;
+      }
+      return;
+    }
+
+    // Cerrar modales al pulsar fuera
+    if (e.target.id === 'modalOverlay') closeModal();
+    if (e.target.id === 'modalStats') closeStats();
   });
 
   // Event listeners filtros
@@ -1214,7 +1239,9 @@ let _pendingAdvanceId = null;
 function advanceEncargo(id) {
   _pendingAdvanceId = id;
   document.getElementById('pasoRepartidor').value = '';
-  document.getElementById('modalRepartidor').classList.add('open');
+  const modal = document.getElementById('modalRepartidor');
+  modal.classList.add('open');
+  modal.style.pointerEvents = 'all';
 }
 
 function cancelarPaso() {
@@ -1230,6 +1257,8 @@ async function confirmarPaso() {
   if (!enc || enc.estado >= 3) { showToast('⚠️ Error al encontrar el encargo', false); return; }
   if (!enc._docId) { showToast('⚠️ Error: documento no encontrado', false); return; }
 
+  document.getElementById('modalRepartidor').classList.remove('open');
+
   const nuevoEstado = enc.estado + 1;
   const nuevoTs = { ...(enc.timestamps || {}), [nuevoEstado]: Date.now() };
   const repartidoresPasos = { ...(enc.repartidoresPasos || {}), [nuevoEstado]: repartidorPaso };
@@ -1241,12 +1270,11 @@ async function confirmarPaso() {
       repartidoresPasos,
       updatedAt: Date.now()
     });
-    document.getElementById('modalRepartidor').classList.remove('open');
     _pendingAdvanceId = null;
     showToast(`${ESTADOS[nuevoEstado].icon} ${ESTADOS[nuevoEstado].label}`);
-  } catch(e) {
+  } catch(err) {
     showToast('⚠️ Error al guardar. Inténtalo de nuevo.', false);
-    console.error(e);
+    console.error(err);
   }
 }
 
@@ -1287,7 +1315,7 @@ function addProductoRow(codigo = '', unidades = '', precio = '') {
         <div class="form-label" style="font-size:0.65rem; margin-bottom:4px;">Precio €</div>
         <input type="text" id="prod-pre-${id}" value="${precio}" placeholder="0,00" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Oswald',sans-serif;font-size:0.82rem;padding:7px 10px;width:100%;outline:none;">
       </div>
-      ${id > 1 ? `<button class="btn-remove-producto" onclick="removeProductoRow(${id})">✕</button>` : '<div></div>'}
+      ${id > 1 ? `<button class="btn-remove-producto" data-remove-producto="${id}">✕</button>` : '<div></div>'}
     </div>
   `;
   container.appendChild(row);
