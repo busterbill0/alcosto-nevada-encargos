@@ -892,14 +892,16 @@
 <div class="modal-overlay" id="modalRepartidor">
   <div class="modal" style="max-width:320px;">
     <div class="modal-title">👤 ¿Quién ha realizado este paso?</div>
-    <div class="form-group">
-      <select id="pasoRepartidor">
-        <option value="">Seleccionar...</option>
-        <option value="Antonio">Antonio</option>
-        <option value="Paco">Paco</option>
-        <option value="Celia">Celia</option>
-        <option value="Eva">Eva</option>
-      </select>
+    <div class="modal-body">
+      <div class="form-group">
+        <select id="pasoRepartidor">
+          <option value="">Seleccionar...</option>
+          <option value="Antonio">Antonio</option>
+          <option value="Paco">Paco</option>
+          <option value="Celia">Celia</option>
+          <option value="Eva">Eva</option>
+        </select>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="cancelarPaso()">Cancelar</button>
@@ -912,6 +914,7 @@
 <div class="modal-overlay" id="modalStats" onclick="closeStatsOutside(event)">
   <div class="modal" style="max-width:500px;">
     <div class="modal-title">📊 Estadísticas por <span>Tienda</span></div>
+    <div class="modal-body">
     <div class="form-group">
       <label class="form-label">Tienda</label>
       <select id="statsTienda"></select>
@@ -943,7 +946,8 @@
         </div>
       </div>
     </div>
-    <div class="modal-actions" style="margin-top:16px;">
+    </div>
+    <div class="modal-actions">
       <button class="btn-secondary" onclick="closeStats()">Cerrar</button>
     </div>
   </div>
@@ -1168,10 +1172,6 @@ function selectEncargo(id) {
       <div class="info-block" style="grid-column: span 2;">
         <div class="info-label">Notas</div>
         <div class="info-value">${enc.notas || '—'}</div>
-      </div>
-      <div class="info-block">
-        <div class="info-label">Repartidor</div>
-        <div class="info-value">${enc.repartidor || '—'}</div>
       </div>
       <div class="info-block">
         <div class="info-label">Creado</div>
