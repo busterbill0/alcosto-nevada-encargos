@@ -1023,6 +1023,18 @@ function init() {
     });
   });
 
+  // Event delegation para botones dinámicos
+  document.addEventListener('click', (e) => {
+    const advance = e.target.closest('[data-advance]');
+    if (advance) { advanceEncargo(advance.dataset.advance); return; }
+
+    const del = e.target.closest('[data-delete]');
+    if (del) { deleteEncargo(del.dataset.delete); return; }
+
+    const volver = e.target.closest('[data-action="volver"]');
+    if (volver) { volverLista(); return; }
+  });
+
   // Event listeners filtros
   document.getElementById('filterEstado').addEventListener('change', renderList);
   document.getElementById('filterOrigen').addEventListener('change', renderList);
@@ -1107,7 +1119,7 @@ function selectEncargo(id) {
   dv.innerHTML = `
     <div class="detail-header">
       <div style="display:flex; align-items:center; gap:12px;">
-        <button class="btn-icon" onclick="volverLista()" title="Volver" style="flex-shrink:0;">‹</button>
+        <button class="btn-icon" data-action="volver" title="Volver" style="flex-shrink:0;">‹</button>
         <div>
           <div class="detail-id">${enc.id}</div>
           <div class="detail-route">
@@ -1116,7 +1128,7 @@ function selectEncargo(id) {
         </div>
       </div>
       <div class="detail-actions">
-        <button class="btn-icon" onclick="deleteEncargo('${enc.id}')" title="Eliminar">🗑️</button>
+        <button class="btn-icon" data-delete="${enc.id}" title="Eliminar">🗑️</button>
       </div>
     </div>
 
@@ -1142,7 +1154,7 @@ function selectEncargo(id) {
                 <div class="step-title ${done ? 'done' : current ? 'current' : 'pending'}">${s.label}</div>
                 ${ts ? `<div class="step-time">${formatDate(ts)}${enc.repartidoresPasos?.[i] ? ' · <strong>' + enc.repartidoresPasos[i] + '</strong>' : ''}</div>` : ''}
                 ${current ? `
-                  <button class="btn-advance" onclick="advanceEncargo('${enc.id}')">
+                  <button class="btn-advance" data-advance="${enc.id}">
                     Marcar este paso ✓
                   </button>
                 ` : ''}
