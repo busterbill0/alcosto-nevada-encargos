@@ -1025,6 +1025,10 @@ function init() {
 
   // Event delegation — gestiona TODOS los clicks
   document.addEventListener('click', (e) => {
+    // Tarjetas de encargo
+    const card = e.target.closest('[data-select]');
+    if (card) { selectEncargo(card.dataset.select); return; }
+
     // Botones con data-advance
     const advance = e.target.closest('[data-advance]');
     if (advance) { advanceEncargo(advance.dataset.advance); return; }
@@ -1114,7 +1118,7 @@ function renderList() {
 
   el.innerHTML = filtered.map(enc => `
     <div class="encargo-card estado-${Math.max(enc.estado, 0)} ${selectedId === enc.id ? 'active' : ''}"
-         onclick="selectEncargo('${enc.id}')">
+         data-select="${enc.id}">
       <div class="card-top">
         <span class="card-id">${enc.id}</span>
         <span class="badge badge-${Math.max(enc.estado, 0)}">${enc.estado === -1 ? '⏳ Pendiente' : ESTADOS[enc.estado].icon + ' ' + ESTADOS[enc.estado].label.split(' ').slice(0,2).join(' ')}</span>
