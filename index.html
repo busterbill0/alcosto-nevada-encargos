@@ -744,6 +744,7 @@
     .app.detail-open .sidebar { display: none; }
     .app.detail-open .main { display: flex; }
     .header-stats { display: none; }
+    #btnMenuMovil { display: flex !important; }
   }
 </style>
 
@@ -752,6 +753,7 @@
 
 <header>
   <div class="logo">ALCOSTO NEVADA <span>·</span> <em>Encargos</em></div>
+  <button id="btnMenuMovil" style="display:none; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:1.2rem; width:38px; height:38px; cursor:pointer; align-items:center; justify-content:center;">☰</button>
   <div class="header-stats"><div class="stat-pill" style="gap:12px;"><span id="helloUser" style="color:var(--text);font-weight:600;"></span><button id="btnLogout" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'Oswald',sans-serif;font-size:0.72rem;padding:3px 10px;cursor:pointer;">Salir</button></div>
     <div class="stat-pill">
       <div class="dot" style="background:var(--s0)"></div>
@@ -771,6 +773,36 @@
     </div>
   </div>
 </header>
+
+<!-- PANEL STATS MÓVIL -->
+<div id="panelStatsMovil" style="display:none; background:var(--surface); border-bottom:1px solid var(--border); padding:14px 16px; flex-direction:column; gap:10px;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <span id="helloUserMovil" style="font-size:0.85rem; font-weight:600; color:var(--text);"></span>
+    <button onclick="signOut(auth)" style="background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'Oswald',sans-serif; font-size:0.72rem; padding:3px 10px; cursor:pointer;">Salir</button>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; align-items:center; gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--s0);flex-shrink:0;"></div>
+      <span style="font-size:0.78rem; color:var(--muted);">En ruta:</span>
+      <span id="cnt0m" style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">0</span>
+    </div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; align-items:center; gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--s1);flex-shrink:0;"></div>
+      <span style="font-size:0.78rem; color:var(--muted);">Casillero:</span>
+      <span id="cnt1m" style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">0</span>
+    </div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; align-items:center; gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--s2);flex-shrink:0;"></div>
+      <span style="font-size:0.78rem; color:var(--muted);">Recogidos:</span>
+      <span id="cnt2m" style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">0</span>
+    </div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; align-items:center; gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--s3);flex-shrink:0;"></div>
+      <span style="font-size:0.78rem; color:var(--muted);">Entregados:</span>
+      <span id="cnt3m" style="font-family:'DM Mono',monospace; color:var(--text); font-weight:600;">0</span>
+    </div>
+  </div>
+</div>
 
 <div class="app" id="appContainer">
   <!-- SIDEBAR -->
@@ -1304,7 +1336,10 @@ async function crearEncargo() {
 // ============ STATS ============
 function updateStats() {
   [0,1,2,3].forEach(i => {
-    document.getElementById('cnt' + i).textContent = encargos.filter(e => e.estado === i).length;
+    const val = encargos.filter(e => e.estado === i).length;
+    document.getElementById('cnt' + i).textContent = val;
+    const mob = document.getElementById('cnt' + i + 'm');
+    if (mob) mob.textContent = val;
   });
 }
 
@@ -1389,6 +1424,8 @@ onAuthStateChanged(auth, (user) => {
     mainHeader.style.display = '';
     currentUserName = USUARIOS[user.email] || user.email.split('@')[0];
     document.getElementById('helloUser').textContent = 'Hola, ' + currentUserName;
+    const mobUser = document.getElementById('helloUserMovil');
+    if (mobUser) mobUser.textContent = 'Hola, ' + currentUserName;
     init();
   } else {
     loginScreen.style.display = 'flex';
@@ -1427,6 +1464,12 @@ document.getElementById('loginPassword').addEventListener('keydown', (e) => {
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 // Exponer funciones al HTML (necesario con type=module)
+// Botón menú móvil
+document.getElementById('btnMenuMovil').addEventListener('click', () => {
+  const panel = document.getElementById('panelStatsMovil');
+  panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+});
+
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.closeModalOutside = closeModalOutside;
