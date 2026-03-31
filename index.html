@@ -965,6 +965,8 @@ const USUARIOS = {
   "eva@nevada.com": "Eva"
 };
 
+let currentUserName = '';
+
 // ============ DATA ============
 const TIENDAS = [
   "Albolote","Antequera","Atarfe","Cabra",
@@ -1187,27 +1189,16 @@ function volverLista() {
 // ============ ADVANCE ============
 let _pendingAdvanceId = null;
 
-function advanceEncargo(id) {
-  _pendingAdvanceId = id;
-  document.getElementById('pasoRepartidor').value = '';
-  document.getElementById('modalRepartidor').classList.add('open');
-}
-
-function cancelarPaso() {
-  _pendingAdvanceId = null;
-  document.getElementById('modalRepartidor').classList.remove('open');
-}
-
-async function confirmarPaso() {
-  const repartidorPaso = document.getElementById('pasoRepartidor').value;
-  if (!repartidorPaso) { showToast('⚠️ Selecciona un repartidor', false); return; }
-
-  const enc = encargos.find(e => e.id === _pendingAdvanceId);
+async function advanceEncargo(id) {
+  const enc = encargos.find(e => e.id === id);
   if (!enc || enc.estado >= 3) return;
+
+  const user = auth.currentUser;
+  const nombre = USUARIOS[user?.email] || (user?.email?.split('@')[0] || '');
 
   const nuevoEstado = enc.estado + 1;
   const nuevoTs = { ...(enc.timestamps || {}), [nuevoEstado]: Date.now() };
-  const repartidoresPasos = { ...(enc.repartidoresPasos || {}), [nuevoEstado]: repartidorPaso };
+  const repartidoresPasos = { ...(enc.repartidoresPasos || {}), [nuevoEstado]: nombre };
 
   await updateDoc(doc(db, "encargos", enc._docId), {
     estado: nuevoEstado,
@@ -1216,8 +1207,6 @@ async function confirmarPaso() {
     updatedAt: Date.now()
   });
 
-  document.getElementById('modalRepartidor').classList.remove('open');
-  _pendingAdvanceId = null;
   showToast(`${ESTADOS[nuevoEstado].icon} ${ESTADOS[nuevoEstado].label}`);
 }
 
@@ -1398,8 +1387,8 @@ onAuthStateChanged(auth, (user) => {
     loginScreen.style.display = 'none';
     appContainer.style.display = '';
     mainHeader.style.display = '';
-    const nombre = USUARIOS[user.email] || user.email.split('@')[0];
-    document.getElementById('helloUser').textContent = 'Hola, ' + nombre;
+    currentUserName = USUARIOS[user.email] || user.email.split('@')[0];
+    document.getElementById('helloUser').textContent = 'Hola, ' + currentUserName;
     init();
   } else {
     loginScreen.style.display = 'flex';
