@@ -1416,7 +1416,17 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
   try {
     await signInWithEmailAndPassword(auth, email, pass);
   } catch(e) {
-    errEl.textContent = 'Email o contraseña incorrectos';
+    console.error('Auth error:', e.code, e.message);
+    const msgs = {
+      'auth/invalid-credential': 'Email o contraseña incorrectos',
+      'auth/user-not-found': 'Usuario no encontrado',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/invalid-email': 'Email no válido',
+      'auth/too-many-requests': 'Demasiados intentos, espera un momento',
+      'auth/network-request-failed': 'Error de red, comprueba tu conexión',
+      'auth/operation-not-allowed': 'Método de login no habilitado en Firebase'
+    };
+    errEl.textContent = msgs[e.code] || ('Error: ' + e.code);
     errEl.style.display = 'block';
   }
 });
