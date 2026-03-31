@@ -1484,6 +1484,13 @@ window.volverLista = volverLista;
 window.cancelarPaso = cancelarPaso;
 window.confirmarPaso = confirmarPaso;
 window.addProductoRow = addProductoRow;
+
+// Event delegation global para botones del modal
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'btnAddProducto' || e.target.closest('#btnAddProducto')) {
+    addProductoRow();
+  }
+});
 window.removeProductoRow = removeProductoRow;
 window.openStats = openStats;
 window.closeStats = closeStats;
