@@ -889,7 +889,7 @@
     </div>
     <div class="form-label" style="margin-bottom:8px;">Productos</div>
     <div id="productosContainer"></div>
-    <button class="btn-add-producto" onclick="addProductoRow()">＋ Añadir producto</button>
+    <button class="btn-add-producto" id="btnAddProducto">＋ Añadir producto</button>
     <div class="form-group" style="margin-top:14px;">
       <label class="form-label">Notas</label>
       <textarea id="newNotas" placeholder="Ej: Frágil, entregar antes del viernes..."></textarea>
@@ -1464,7 +1464,10 @@ document.getElementById('loginPassword').addEventListener('keydown', (e) => {
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 // Exponer funciones al HTML (necesario con type=module)
-// Botón menú móvil
+// Botón añadir producto
+  document.getElementById('btnAddProducto').addEventListener('click', () => addProductoRow());
+
+  // Botón menú móvil
 document.getElementById('btnMenuMovil').addEventListener('click', () => {
   const panel = document.getElementById('panelStatsMovil');
   panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
