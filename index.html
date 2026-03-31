@@ -778,7 +778,7 @@
 <div id="panelStatsMovil" style="display:none; background:var(--surface); border-bottom:1px solid var(--border); padding:14px 16px; flex-direction:column; gap:10px;">
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <span id="helloUserMovil" style="font-size:1.6rem; font-weight:800; color:var(--text); letter-spacing:0.02em;"></span>
-    <button onclick="signOut(auth)" style="background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'Oswald',sans-serif; font-size:0.72rem; padding:3px 10px; cursor:pointer;">Salir</button>
+    <button id="btnLogoutMovil" style="background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'Oswald',sans-serif; font-size:0.72rem; padding:3px 10px; cursor:pointer;">Salir</button>
   </div>
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
     <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; align-items:center; gap:8px;">
@@ -1484,6 +1484,9 @@ window.volverLista = volverLista;
 window.cancelarPaso = cancelarPaso;
 window.confirmarPaso = confirmarPaso;
 window.addProductoRow = addProductoRow;
+
+// Botón salir móvil
+document.getElementById('btnLogoutMovil')?.addEventListener('click', () => signOut(auth));
 
 // Event delegation global para botones del modal
 document.addEventListener('click', (e) => {
