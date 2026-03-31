@@ -881,16 +881,6 @@
       <label class="form-label">Notas</label>
       <textarea id="newNotas" placeholder="Ej: Frágil, entregar antes del viernes..."></textarea>
     </div>
-    <div class="form-group">
-      <label class="form-label">Repartidor</label>
-      <select id="newRepartidor">
-        <option value="">Seleccionar...</option>
-        <option value="Antonio">Antonio</option>
-        <option value="Paco">Paco</option>
-        <option value="Celia">Celia</option>
-        <option value="Eva">Eva</option>
-      </select>
-    </div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -1181,10 +1171,6 @@ function selectEncargo(id) {
         <div class="info-value">${enc.notas || '—'}</div>
       </div>
       <div class="info-block">
-        <div class="info-label">Repartidor</div>
-        <div class="info-value">${enc.repartidor || '—'}</div>
-      </div>
-      <div class="info-block">
         <div class="info-label">Creado</div>
         <div class="info-value mono">${formatDate(enc.createdAt)}</div>
       </div>
@@ -1309,7 +1295,6 @@ async function crearEncargo() {
   const origen = document.getElementById('newOrigen').value;
   const destino = document.getElementById('newDestino').value;
   const notas = document.getElementById('newNotas').value.trim();
-  const repartidor = document.getElementById('newRepartidor').value.trim();
   const productos = getProductos();
 
   if (!origen || !destino) { showToast('⚠️ Selecciona tiendas', false); return; }
@@ -1324,7 +1309,7 @@ async function crearEncargo() {
     unidades: productos[0].unidades,
     precio: productos[0].precio,
     productos,
-    notas, repartidor,
+    notas,
     estado: -1,
     timestamps: {},
     createdAt: Date.now(),
@@ -1348,7 +1333,6 @@ function openModal() {
   document.getElementById('newOrigen').value = '';
   document.getElementById('newDestino').value = '';
   document.getElementById('newNotas').value = '';
-  document.getElementById('newRepartidor').value = '';
   document.getElementById('productosContainer').innerHTML = '';
   productoCount = 0;
   addProductoRow();
