@@ -746,53 +746,13 @@
     .header-stats { display: none; }
   }
 </style>
-<script>
-(function() {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 512;
-  const ctx = c.getContext('2d');
-  
-  // Fondo azul redondeado
-  const r = 90;
-  ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(512-r, 0);
-  ctx.quadraticCurveTo(512, 0, 512, r);
-  ctx.lineTo(512, 512-r);
-  ctx.quadraticCurveTo(512, 512, 512-r, 512);
-  ctx.lineTo(r, 512);
-  ctx.quadraticCurveTo(0, 512, 0, 512-r);
-  ctx.lineTo(0, r);
-  ctx.quadraticCurveTo(0, 0, r, 0);
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(0, 0, 512, 512);
-  grad.addColorStop(0, '#1a6fa8');
-  grad.addColorStop(1, '#0d3d6e');
-  ctx.fillStyle = grad;
-  ctx.fill();
 
-  // Texto NV en amarillo
-  ctx.fillStyle = '#f0b429';
-  ctx.font = 'bold 220px Arial Black';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('NV', 256, 200);
-
-  // Texto NEVADA en blanco
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 88px Arial';
-  ctx.letterSpacing = '6px';
-  ctx.fillText('NEVADA', 256, 360);
-
-  document.getElementById('appIcon').href = c.toDataURL('image/png');
-})();
-</script>
 </head>
 <body>
 
 <header>
   <div class="logo">ALCOSTO NEVADA <span>·</span> <em>Encargos</em></div>
-  <div class="header-stats">
+  <div class="header-stats"><div class="stat-pill" style="gap:12px;"><span id="helloUser" style="color:var(--text);font-weight:600;"></span><button id="btnLogout" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'Oswald',sans-serif;font-size:0.72rem;padding:3px 10px;cursor:pointer;">Salir</button></div>
     <div class="stat-pill">
       <div class="dot" style="background:var(--s0)"></div>
       En ruta: <span class="num" id="cnt0">0</span>
@@ -858,6 +818,27 @@
       <p>Selecciona un encargo para ver el detalle</p>
     </div>
     <div id="detailView" style="display:none; flex-direction:column; gap:24px;"></div>
+  </div>
+</div>
+
+
+<!-- PANTALLA LOGIN -->
+<div id="loginScreen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;">
+  <div style="text-align:center; margin-bottom:8px;">
+    <div style="font-size:1.4rem; font-weight:800; letter-spacing:0.12em; color:var(--accent);">ALCOSTO NEVADA <span style="color:var(--text);">·</span> <span style="color:#f0b429;">Encargos</span></div>
+    <div style="font-size:0.8rem; color:var(--muted); margin-top:6px;">Acceso privado</div>
+  </div>
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px; width:320px; max-width:90vw; display:flex; flex-direction:column; gap:16px;">
+    <div>
+      <div class="filter-label" style="margin-bottom:7px;">Email</div>
+      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
+    </div>
+    <div>
+      <div class="filter-label" style="margin-bottom:7px;">Contraseña</div>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="loginError" style="display:none; color:var(--danger); font-size:0.78rem; text-align:center;"></div>
+    <button id="btnLogin" style="background:#f0b429; color:#0f0f11; border:none; border-radius:var(--r); padding:12px; font-family:'Oswald',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; margin-top:4px;">Entrar</button>
   </div>
 </div>
 
@@ -959,7 +940,8 @@
 <script type="module">
 // ============ FIREBASE ============
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBq3M4P4HxdWP4CTcCI2vgvUAzyKFkuWpY",
@@ -973,6 +955,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const encargosRef = collection(db, "encargos");
+const auth = getAuth(app);
+
+// Mapa email -> nombre
+const USUARIOS = {
+  "antonio@nevada.com": "Antonio",
+  "paco@nevada.com": "Paco",
+  "celia@nevada.com": "Celia",
+  "eva@nevada.com": "Eva"
+};
 
 // ============ DATA ============
 const TIENDAS = [
@@ -1397,8 +1388,44 @@ function calcularStats() {
   document.getElementById('statsResult').style.display = 'block';
 }
 
-// ============ START ============
-init();
+// ============ AUTH ============
+const loginScreen = document.getElementById('loginScreen');
+const appContainer = document.getElementById('appContainer');
+const mainHeader = document.querySelector('header');
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginScreen.style.display = 'none';
+    appContainer.style.display = '';
+    mainHeader.style.display = '';
+    const nombre = USUARIOS[user.email] || user.email.split('@')[0];
+    document.getElementById('helloUser').textContent = 'Hola, ' + nombre;
+    init();
+  } else {
+    loginScreen.style.display = 'flex';
+    appContainer.style.display = 'none';
+    mainHeader.style.display = 'none';
+  }
+});
+
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    errEl.textContent = 'Email o contraseña incorrectos';
+    errEl.style.display = 'block';
+  }
+});
+
+document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btnLogin').click();
+});
+
+document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
 // Exponer funciones al HTML (necesario con type=module)
 window.openModal = openModal;
