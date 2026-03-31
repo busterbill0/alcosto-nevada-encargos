@@ -777,7 +777,7 @@
 <!-- PANEL STATS MÓVIL -->
 <div id="panelStatsMovil" style="display:none; background:var(--surface); border-bottom:1px solid var(--border); padding:14px 16px; flex-direction:column; gap:10px;">
   <div style="display:flex; justify-content:space-between; align-items:center;">
-    <span id="helloUserMovil" style="font-size:0.85rem; font-weight:600; color:var(--text);"></span>
+    <span id="helloUserMovil" style="font-size:1.6rem; font-weight:800; color:var(--text); letter-spacing:0.02em;"></span>
     <button onclick="signOut(auth)" style="background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'Oswald',sans-serif; font-size:0.72rem; padding:3px 10px; cursor:pointer;">Salir</button>
   </div>
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
@@ -1425,7 +1425,7 @@ onAuthStateChanged(auth, (user) => {
     currentUserName = USUARIOS[user.email] || user.email.split('@')[0];
     document.getElementById('helloUser').textContent = 'Hola, ' + currentUserName;
     const mobUser = document.getElementById('helloUserMovil');
-    if (mobUser) mobUser.textContent = 'Hola, ' + currentUserName;
+    if (mobUser) mobUser.textContent = '¡Hola, ' + currentUserName + '!';
     init();
   } else {
     loginScreen.style.display = 'flex';
