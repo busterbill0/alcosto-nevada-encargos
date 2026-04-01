@@ -847,7 +847,7 @@
     </div>
     <div class="encargos-list" id="encargosList"></div>
     <div class="sidebar-footer">
-      <button class="btn-stats" onclick="openStats()">📊 Estadísticas por tienda</button>
+      <button class="btn-stats" id="btnAbrirStats">📊 Estadísticas por tienda</button>
     </div>
   </div>
 
@@ -920,7 +920,7 @@
 </div>
 
 <!-- MODAL ESTADÍSTICAS -->
-<div class="modal-overlay" id="modalStats" onclick="closeStatsOutside(event)">
+<div class="modal-overlay" id="modalStats">
   <div class="modal" style="max-width:500px;">
     <div class="modal-title">📊 Estadísticas por <span>Tienda</span></div>
     <div class="form-group">
