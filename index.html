@@ -677,7 +677,7 @@
 
   .producto-row-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
     gap: 8px;
     align-items: end;
   }
@@ -1258,6 +1258,14 @@ async function deleteEncargo(id) {
 // ============ PRODUCTOS ============
 let productoCount = 0;
 
+function calcularTotal(id) {
+  const uds = parseFloat(document.getElementById(`prod-uds-${id}`)?.value.replace(',', '.')) || 0;
+  const pre = parseFloat(document.getElementById(`prod-pre-${id}`)?.value.replace(',', '.')) || 0;
+  const total = uds * pre;
+  const el = document.getElementById(`prod-tot-${id}`);
+  if (el) el.textContent = total > 0 ? total.toFixed(2).replace('.', ',') + ' €' : '—';
+}
+
 function addProductoRow(codigo = '', unidades = '', precio = '') {
   productoCount++;
   const id = productoCount;
@@ -1279,10 +1287,23 @@ function addProductoRow(codigo = '', unidades = '', precio = '') {
         <div class="form-label" style="font-size:0.65rem; margin-bottom:4px;">Precio €</div>
         <input type="text" id="prod-pre-${id}" value="${precio}" placeholder="0,00" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Oswald',sans-serif;font-size:0.82rem;padding:7px 10px;width:100%;outline:none;">
       </div>
+      <div>
+        <div class="form-label" style="font-size:0.65rem; margin-bottom:4px;">Total</div>
+        <div id="prod-tot-${id}" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:#f0b429;font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:700;padding:7px 10px;width:100%;">—</div>
+      </div>
       ${id > 1 ? `<button class="btn-remove-producto" onclick="removeProductoRow(${id})">✕</button>` : '<div></div>'}
     </div>
   `;
   container.appendChild(row);
+
+  // Listeners para calcular total en tiempo real
+  const udsEl = document.getElementById(`prod-uds-${id}`);
+  const preEl = document.getElementById(`prod-pre-${id}`);
+  udsEl.addEventListener('input', () => calcularTotal(id));
+  preEl.addEventListener('input', () => calcularTotal(id));
+
+  // Si hay valores iniciales, calcular
+  if (unidades && precio) calcularTotal(id);
 }
 
 function removeProductoRow(id) {
@@ -1297,7 +1318,8 @@ function getProductos() {
     const cod = document.getElementById(`prod-cod-${id}`)?.value.trim();
     const uds = document.getElementById(`prod-uds-${id}`)?.value.trim();
     const pre = document.getElementById(`prod-pre-${id}`)?.value.trim();
-    if (cod) productos.push({ codigo: cod, unidades: uds, precio: pre });
+    const tot = document.getElementById(`prod-tot-${id}`)?.textContent || '';
+    if (cod) productos.push({ codigo: cod, unidades: uds, precio: pre, total: tot.replace(' €','') });
   });
   return productos;
 }
