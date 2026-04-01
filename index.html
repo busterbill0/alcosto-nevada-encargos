@@ -839,7 +839,7 @@
     </div>
     <div class="encargos-list" id="encargosList"></div>
     <div class="sidebar-footer">
-      <button class="btn-stats" onclick="openStats()">📊 Estadísticas por tienda</button>
+      <button class="btn-stats" id="btnAbrirStats">📊 Estadísticas por tienda</button>
     </div>
   </div>
 
@@ -1517,6 +1517,8 @@ document.getElementById('btnLogout').addEventListener('click', () => signOut(aut
 // Botón añadir producto
   document.getElementById('btnAddProducto').addEventListener('click', () => addProductoRow());
 
+  // Botón estadísticas
+
   // Botón menú móvil
 document.getElementById('btnMenuMovil').addEventListener('click', () => {
   const panel = document.getElementById('panelStatsMovil');
@@ -1546,6 +1548,10 @@ document.addEventListener('click', (e) => {
 });
 window.removeProductoRow = removeProductoRow;
 window.openStats = openStats;
+
+document.getElementById('btnAbrirStats').addEventListener('click', openStats);
+document.getElementById('btnCerrarStats')?.addEventListener('click', () => document.getElementById('modalStats').classList.remove('open'));
+document.getElementById('btnCalcularStats')?.addEventListener('click', calcularStats);
 window.closeStats = closeStats;
 window.closeStatsOutside = closeStatsOutside;
 window.calcularStats = calcularStats;
