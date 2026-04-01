@@ -847,7 +847,7 @@
     </div>
     <div class="encargos-list" id="encargosList"></div>
     <div class="sidebar-footer">
-      <button class="btn-stats" id="btnAbrirStats">📊 Estadísticas por tienda</button>
+      <button class="btn-stats" onclick="openStats()">📊 Estadísticas por tienda</button>
     </div>
   </div>
 
@@ -920,7 +920,7 @@
 </div>
 
 <!-- MODAL ESTADÍSTICAS -->
-<div class="modal-overlay" id="modalStats">
+<div class="modal-overlay" id="modalStats" onclick="closeStatsOutside(event)">
   <div class="modal" style="max-width:500px;">
     <div class="modal-title">📊 Estadísticas por <span>Tienda</span></div>
     <div class="form-group">
@@ -1416,20 +1416,7 @@ function calcularStats() {
 // ============ START ============
 init();
 
-// ============ LISTENERS ============
-document.getElementById('btnAddProducto').addEventListener('click', () => addProductoRow());
-document.getElementById('btnMenuMovil').addEventListener('click', () => {
-  const panel = document.getElementById('panelStatsMovil');
-  panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-});
-document.getElementById('btnLogoutMovil')?.addEventListener('click', () => signOut(auth));
-document.getElementById('btnAbrirStats').addEventListener('click', openStats);
-document.getElementById('btnCerrarStats').addEventListener('click', closeStats);
-document.getElementById('btnCalcularStats').addEventListener('click', calcularStats);
-document.getElementById('modalStats').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('modalStats')) closeStats();
-});
-
+// Exponer funciones al HTML (necesario con type=module)
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.closeModalOutside = closeModalOutside;
