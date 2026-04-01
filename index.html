@@ -955,6 +955,18 @@
           <div class="stats-label">📦 Total encargos</div>
           <div class="stats-num" id="statsTotal">0</div>
         </div>
+        <div class="stats-box">
+          <div class="stats-label">💸 € Enviado</div>
+          <div class="stats-num" style="font-size:1.4rem;" id="statsEuroEnviado">0,00 €</div>
+        </div>
+        <div class="stats-box">
+          <div class="stats-label">💰 € Recibido</div>
+          <div class="stats-num" style="font-size:1.4rem;" id="statsEuroRecibido">0,00 €</div>
+        </div>
+        <div class="stats-box" style="grid-column:span 2;">
+          <div class="stats-label">🏦 € Total movido</div>
+          <div class="stats-num" style="font-size:1.4rem;" id="statsEuroTotal">0,00 €</div>
+        </div>
       </div>
     </div>
     <div class="modal-actions" style="margin-top:16px;">
@@ -1425,12 +1437,28 @@ function calcularStats() {
     return ts >= desde && ts <= hasta;
   });
 
-  const enviados = filtrados.filter(e => (e.origen || '').toLowerCase() === tienda.toLowerCase()).length;
-  const recibidos = filtrados.filter(e => (e.destino || '').toLowerCase() === tienda.toLowerCase()).length;
+  const encEnviados = filtrados.filter(e => (e.origen || '').toLowerCase() === tienda.toLowerCase());
+  const encRecibidos = filtrados.filter(e => (e.destino || '').toLowerCase() === tienda.toLowerCase());
 
-  document.getElementById('statsEnviados').textContent = enviados;
-  document.getElementById('statsRecibidos').textContent = recibidos;
-  document.getElementById('statsTotal').textContent = enviados + recibidos;
+  function calcEurosEncargo(enc) {
+    const prods = enc.productos?.length > 0 ? enc.productos : [{ unidades: enc.unidades, precio: enc.precio, total: enc.total }];
+    return prods.reduce((sum, p) => {
+      const t = p.total ? parseFloat(p.total.replace(',', '.')) : 0;
+      const u = parseFloat(p.unidades) || 1;
+      const pr = parseFloat((p.precio || '0').replace(',', '.'));
+      return sum + (t > 0 ? t : u * pr);
+    }, 0);
+  }
+
+  const euroEnviado = encEnviados.reduce((s, e) => s + calcEurosEncargo(e), 0);
+  const euroRecibido = encRecibidos.reduce((s, e) => s + calcEurosEncargo(e), 0);
+
+  document.getElementById('statsEnviados').textContent = encEnviados.length;
+  document.getElementById('statsRecibidos').textContent = encRecibidos.length;
+  document.getElementById('statsTotal').textContent = encEnviados.length + encRecibidos.length;
+  document.getElementById('statsEuroEnviado').textContent = euroEnviado.toFixed(2).replace('.', ',') + ' €';
+  document.getElementById('statsEuroRecibido').textContent = euroRecibido.toFixed(2).replace('.', ',') + ' €';
+  document.getElementById('statsEuroTotal').textContent = (euroEnviado + euroRecibido).toFixed(2).replace('.', ',') + ' €';
   document.getElementById('statsResult').style.display = 'block';
 }
 
