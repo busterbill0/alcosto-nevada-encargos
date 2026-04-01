@@ -923,35 +923,39 @@
 <div class="modal-overlay" id="modalStats">
   <div class="modal" style="max-width:500px;">
     <div class="modal-title">📊 Estadísticas por <span>Tienda</span></div>
-    <div class="modal-body">
+    <div class="form-group">
+      <label class="form-label">Tienda</label>
+      <select id="statsTienda"></select>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
       <div class="form-group">
-        <label class="form-label">Tienda</label>
-        <select id="statsTienda"></select>
+        <label class="form-label">Desde</label>
+        <input type="date" id="statsDesde">
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
-        <div class="form-group">
-          <label class="form-label">Desde</label>
-          <input type="date" id="statsDesde">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Hasta</label>
-          <input type="date" id="statsHasta">
-        </div>
+      <div class="form-group">
+        <label class="form-label">Hasta</label>
+        <input type="date" id="statsHasta">
       </div>
-      <button class="btn-primary" id="btnCalcularStats" style="width:100%; margin-bottom:18px;">Ver estadísticas</button>
-      <div id="statsResult" style="display:none;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="stats-box"><div class="stats-label">📤 Enviados</div><div class="stats-num" id="statsEnviados">0</div></div>
-          <div class="stats-box"><div class="stats-label">📥 Recibidos</div><div class="stats-num" id="statsRecibidos">0</div></div>
-          <div class="stats-box" style="grid-column:span 2;"><div class="stats-label">📦 Total encargos</div><div class="stats-num" id="statsTotal">0</div></div>
-          <div class="stats-box"><div class="stats-label">💸 € Enviado</div><div class="stats-num" style="font-size:1.4rem;" id="statsEuroEnviado">0,00 €</div></div>
-          <div class="stats-box"><div class="stats-label">💰 € Recibido</div><div class="stats-num" style="font-size:1.4rem;" id="statsEuroRecibido">0,00 €</div></div>
-          <div class="stats-box" style="grid-column:span 2;"><div class="stats-label">🏦 € Total movido</div><div class="stats-num" style="font-size:1.4rem;" id="statsEuroTotal">0,00 €</div></div>
+    </div>
+    <button class="btn-primary" style="width:100%; margin-bottom:18px;" onclick="calcularStats()">Ver estadísticas</button>
+    <div id="statsResult" style="display:none;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="stats-box">
+          <div class="stats-label">📤 Enviados</div>
+          <div class="stats-num" id="statsEnviados">0</div>
+        </div>
+        <div class="stats-box">
+          <div class="stats-label">📥 Recibidos</div>
+          <div class="stats-num" id="statsRecibidos">0</div>
+        </div>
+        <div class="stats-box" style="grid-column:span 2;">
+          <div class="stats-label">📦 Total encargos</div>
+          <div class="stats-num" id="statsTotal">0</div>
         </div>
       </div>
     </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" id="btnCerrarStats">Cerrar</button>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="closeStats()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1367,7 +1371,81 @@ function showToast(msg, ok = true) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ============ ESTADÍSTICAS ============
+function openStats() {
+  const sel = document.getElementById('statsTienda');
+  sel.innerHTML = '<option value="">Seleccionar tienda...</option>';
+  TIENDAS.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
+  document.getElementById('statsResult').style.display = 'none';
+  document.getElementById('statsDesde').value = '';
+  document.getElementById('statsHasta').value = '';
+  document.getElementById('modalStats').classList.add('open');
+}
 
+function closeStats() {
+  document.getElementById('modalStats').classList.remove('open');
+}
+
+function closeStatsOutside(e) {
+  if (e.target === document.getElementById('modalStats')) closeStats();
+}
+
+function calcularStats() {
+  const tienda = document.getElementById('statsTienda').value;
+  if (!tienda) { showToast('⚠️ Selecciona una tienda', false); return; }
+
+  const desdeVal = document.getElementById('statsDesde').value;
+  const hastaVal = document.getElementById('statsHasta').value;
+  const desde = desdeVal ? new Date(desdeVal).getTime() : 0;
+  const hasta = hastaVal ? new Date(hastaVal + 'T23:59:59').getTime() : Date.now();
+
+  const filtrados = encargos.filter(e => {
+    const ts = e.createdAt?.toMillis ? e.createdAt.toMillis() : (e.createdAt || 0);
+    return ts >= desde && ts <= hasta;
+  });
+
+  const enviados = filtrados.filter(e => (e.origen || '').toLowerCase() === tienda.toLowerCase()).length;
+  const recibidos = filtrados.filter(e => (e.destino || '').toLowerCase() === tienda.toLowerCase()).length;
+
+  document.getElementById('statsEnviados').textContent = enviados;
+  document.getElementById('statsRecibidos').textContent = recibidos;
+  document.getElementById('statsTotal').textContent = enviados + recibidos;
+  document.getElementById('statsResult').style.display = 'block';
+}
+
+// ============ START ============
+init();
+
+// ============ LISTENERS ============
+document.getElementById('btnAddProducto').addEventListener('click', () => addProductoRow());
+document.getElementById('btnMenuMovil').addEventListener('click', () => {
+  const panel = document.getElementById('panelStatsMovil');
+  panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+});
+document.getElementById('btnLogoutMovil')?.addEventListener('click', () => signOut(auth));
+document.getElementById('btnAbrirStats').addEventListener('click', openStats);
+document.getElementById('btnCerrarStats').addEventListener('click', closeStats);
+document.getElementById('btnCalcularStats').addEventListener('click', calcularStats);
+document.getElementById('modalStats').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modalStats')) closeStats();
+});
+
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.closeModalOutside = closeModalOutside;
+window.crearEncargo = crearEncargo;
+window.selectEncargo = selectEncargo;
+window.advanceEncargo = advanceEncargo;
+window.deleteEncargo = deleteEncargo;
+window.volverLista = volverLista;
+window.cancelarPaso = cancelarPaso;
+window.confirmarPaso = confirmarPaso;
+window.addProductoRow = addProductoRow;
+window.removeProductoRow = removeProductoRow;
+window.openStats = openStats;
+window.closeStats = closeStats;
+window.closeStatsOutside = closeStatsOutside;
+window.calcularStats = calcularStats;
 </script>
 </body>
 </html>
