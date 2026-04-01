@@ -746,47 +746,7 @@
     .header-stats { display: none; }
   }
 </style>
-<script>
-(function() {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 512;
-  const ctx = c.getContext('2d');
-  
-  // Fondo azul redondeado
-  const r = 90;
-  ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(512-r, 0);
-  ctx.quadraticCurveTo(512, 0, 512, r);
-  ctx.lineTo(512, 512-r);
-  ctx.quadraticCurveTo(512, 512, 512-r, 512);
-  ctx.lineTo(r, 512);
-  ctx.quadraticCurveTo(0, 512, 0, 512-r);
-  ctx.lineTo(0, r);
-  ctx.quadraticCurveTo(0, 0, r, 0);
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(0, 0, 512, 512);
-  grad.addColorStop(0, '#1a6fa8');
-  grad.addColorStop(1, '#0d3d6e');
-  ctx.fillStyle = grad;
-  ctx.fill();
 
-  // Texto NV en amarillo
-  ctx.fillStyle = '#f0b429';
-  ctx.font = 'bold 220px Arial Black';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('NV', 256, 200);
-
-  // Texto NEVADA en blanco
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 88px Arial';
-  ctx.letterSpacing = '6px';
-  ctx.fillText('NEVADA', 256, 360);
-
-  document.getElementById('appIcon').href = c.toDataURL('image/png');
-})();
-</script>
 </head>
 <body>
 
